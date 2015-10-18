@@ -1,25 +1,95 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Reproducible Research Peer Assignment 1"
+author: "Ray Hookway"
+date: "October 17, 2015"
+output: html_document
 ---
 
+##Loading and preprocessing the data
 
-## Loading and preprocessing the data
+```{r}
+library(dplyr)
+rawdata <- read.csv('activity.csv')
+data <- filter(rawdata, !is.na(steps))
+```
+
+##What is mean total number of steps taken per day?
+###Total steps taken per day
+
+```{r}
+steps <- group_by(data, date) %>%
+    summarise(
+        totalSteps = sum(steps),
+        meanSteps = mean(steps),
+        medianSteps = median(steps)
+    )
+print.data.frame(select(steps, date, totalSteps))
+```
+
+###Histogram of total steps taken each day.
+
+```{r}
+hist(steps$totalSteps)
+```
+
+###Mean and median of total steps taken per day.
+
+```{r}
+print(as.data.frame(steps))
+```
+
+##What is the average daily activity pattern?
+###Time series plot
+
+```{r}
+timeseries <- group_by(data, interval) %>% 
+  summarise(totalSteps = sum(steps), meanSteps = mean(steps), medianSteps = median(steps))
+plot(timeseries$interval, timeseries$totalSteps, type='l')
+```
+
+###Interval containing the maximum number of steps
+
+```{r}
+print(timeseries[which.max(timeseries$totalSteps),])
+```
+
+##Impute missing values
+
+###Number of missing values
+
+```{r}
+sum(is.na(rawdata$steps))
+```
+
+###Strategy for imputing missing values of steps
+
+Imputed missing value is the average value for the interval across all days.
+
+###Dataset with imputed values
+
+```{r}
+mutated <- left_join(rawdata, timeseries, by = 'interval') %>%
+  mutate(steps = ifelse(!is.na(steps), steps, meanSteps)) %>%
+  select(steps, date, interval)
+head(mutated)
+```
+
+###Histogram of total number of steps taken
+
+```{r}
+mutatedSteps <- group_by(mutated, date) %>%
+    summarise(
+        totalSteps = sum(steps),
+        meanSteps = mean(steps),
+        medianSteps = median(steps)
+    )
+hist(mutatedSteps$totalSteps)
+```
+
+###Mean and median number of steps taken per day (mutated data)
+
+```{r}
+print.data.frame(mutatedSteps)
+```
 
 
-
-## What is mean total number of steps taken per day?
-
-
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
