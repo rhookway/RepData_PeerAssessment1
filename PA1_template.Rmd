@@ -29,7 +29,7 @@ print.data.frame(select(steps, date, totalSteps))
 ###Histogram of total steps taken each day.
 
 ```{r}
-hist(steps$totalSteps)
+hist(steps$totalSteps, main = 'Histogram of steps', xlab = 'steps per day')
 ```
 
 ###Mean and median of total steps taken per day.
@@ -44,7 +44,8 @@ print(as.data.frame(steps))
 ```{r}
 timeseries <- group_by(data, interval) %>% 
   summarise(totalSteps = sum(steps), meanSteps = mean(steps), medianSteps = median(steps))
-plot(timeseries$interval, timeseries$totalSteps, type='l')
+naSteps <- sum(timeseries$meanSteps)
+plot(timeseries$interval, timeseries$totalSteps, type='l', main = 'Time series', xlab = 'interval', ylab = 'steps')
 ```
 
 ###Interval containing the maximum number of steps
@@ -83,8 +84,11 @@ mutatedSteps <- group_by(mutated, date) %>%
         meanSteps = mean(steps),
         medianSteps = median(steps)
     )
-hist(mutatedSteps$totalSteps)
+hist(mutatedSteps$totalSteps, main = 'Histogram of steps per day (mutated data)', xlab = 'steps per day')
 ```
+
+Values differ from earlier, non-mutated, data. The primary difference is to add value to the bucket between 10000 and
+15000. This makes sense since the the sum of the mean values of the number of steps per day is `r naSteps`.
 
 ###Mean and median number of steps taken per day (mutated data)
 
@@ -92,4 +96,11 @@ hist(mutatedSteps$totalSteps)
 print.data.frame(mutatedSteps)
 ```
 
+##Differences in activity between weekends and weekdays
 
+```{r}
+mutated$dow <- as.factor(ifelse(grepl('Sat|Sun', weekdays(as.Date(mutated$date))), 'weekend', 'weekday'))
+sorted <- mutated[order(mutated$interval),]
+library(lattice)
+xyplot(steps ~ interval | dow, sorted, type = 'l', layout = c(1,2), main = 'Steps per interval')
+```
