@@ -24,12 +24,14 @@ steps <- group_by(data, date) %>%
         medianSteps = median(steps)
     )
 print.data.frame(select(steps, date, totalSteps))
+print(mean(steps$totalSteps))
+print(median(steps$totalSteps))
 ```
 
 ###Histogram of total steps taken each day.
 
 ```{r}
-hist(steps$totalSteps, main = 'Histogram of steps', xlab = 'steps per day')
+hist(steps$totalSteps, main = 'Histogram of steps', xlab = 'steps per day', breaks = 30)
 ```
 
 ###Mean and median of total steps taken per day.
@@ -84,7 +86,7 @@ mutatedSteps <- group_by(mutated, date) %>%
         meanSteps = mean(steps),
         medianSteps = median(steps)
     )
-hist(mutatedSteps$totalSteps, main = 'Histogram of steps per day (mutated data)', xlab = 'steps per day')
+hist(mutatedSteps$totalSteps, main = 'Histogram of steps per day (mutated data)', xlab = 'steps per day', breaks = 30)
 ```
 
 Values differ from earlier, non-mutated, data. The primary difference is to add value to the bucket between 10000 and
@@ -100,7 +102,8 @@ print.data.frame(mutatedSteps)
 
 ```{r}
 mutated$dow <- as.factor(ifelse(grepl('Sat|Sun', weekdays(as.Date(mutated$date))), 'weekend', 'weekday'))
-sorted <- mutated[order(mutated$interval),]
+head(mutated)
+x <- group_by(mutated, dow, interval) %>% summarise(meanSteps = mean(steps))
 library(lattice)
-xyplot(steps ~ interval | dow, sorted, type = 'l', layout = c(1,2), main = 'Steps per interval')
+xyplot(meanSteps ~ interval | dow, x, type = 'l', layout = c(1,2), main = 'Steps per interval')
 ```
